@@ -8,7 +8,8 @@
   <title>VK Photo Downloader</title>
 
   <!-- Bootstrap -->
-  <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../bower_components/animate.css/animate.min.css" rel="stylesheet">
     
 </head>
 <body>
@@ -34,9 +35,23 @@
     </div>
       
   </div>
-    
-  <script>window.$ = window.jQuery = require('./jquery.min.js');</script>
+
+  <script>window.$ = window.jQuery = require('../bower_components/jquery/dist/jquery.min.js');</script>
+  <script src="../bower_components/noty/js/noty/packaged/jquery.noty.packaged.min.js"></script>
+
   <script>
+      const n = noty({
+          text: 'noty - a jquery notification library!',
+          layout: 'topRight',
+          type: 'error',
+          timeout: 5000,
+          theme: 'relax',
+          animation: {
+              open: 'animated fadeInDown',
+              close: 'animated fadeOut',
+          },
+      });
+      
       const {ipcRenderer} = require('electron');
 
       function loaded() {
