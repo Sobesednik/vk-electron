@@ -1,0 +1,21 @@
+{
+  "name": "vk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "bower": "^1.7.9",
+    "debug": "^2.2.0",
+    "electron-prebuilt": "^1.2.7",
+    "request": "^2.73.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "electron": "DEBUG=* electron electron-main.js",
+    "start": "electron electron-main.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "bower install; cp -R bower_components/bootstrap/dist html/bootstrap; cp bower_components/jquery/dist/jquery.min.js html"
+  },
+  "author": "",
+  "license": "ISC"
+}

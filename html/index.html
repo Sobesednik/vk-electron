@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+  <title>VK Photo Downloader</title>
+
+  <!-- Bootstrap -->
+  <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-xs-12">
+        <h1>Hello, world!</h1>
+      </div>
+    </div>
+      
+    <div id="div-loading" class="row">
+      <div class="col-xs-12">
+          Loading...
+      </div>
+    </div>
+      
+    <div id="div-loaded" style="display:none;" class="row">
+      <div class="col-xs-12">
+          <span id="vk-name"></span>
+          <button id="login-vk-button" class="btn btn-sm btn-primary">Login VK</button>
+          <button id="logout-vk-button" style="display:none;" class="btn btn-sm btn-primary">Logout VK</button>
+      </div>
+    </div>
+      
+  </div>
+    
+  <script>window.$ = window.jQuery = require('./jquery.min.js');</script>
+  <script>
+      const {ipcRenderer} = require('electron');
+
+      function loaded() {
+          $('#div-loading').remove();
+          $('#div-loaded').show();
+      }
+      
+      function login() {
+          ipcRenderer.send('asynchronous-message', 'login');
+      }
+      function logout() {
+          ipcRenderer.send('asynchronous-message', 'logout');
+      }
+      
+      ipcRenderer.on('vkUser', (event, message) => {
+          $('#login-vk-button').hide();
+          $('#logout-vk-button').show();
+          $('#vk-name').html(`${message.first_name} ${message.last_name}`);
+      });
+      ipcRenderer.on('logout', (event, message) => {
+          $('#login-vk-button').show();
+          $('#logout-vk-button').hide();
+          $('#vk-name').html('');
+      });
+      
+      $('#login-vk-button').click(function () {
+          login();
+      });
+      $('#logout-vk-button').click(function () {
+          logout();
+      });
+      
+      ipcRenderer.on('loaded', () => {
+          loaded();
+      });
+
+      
+  </script>
+</body>
+</html>
