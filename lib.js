@@ -32,6 +32,18 @@ function setCookie(session, cookieURL, name, value, expirationDate) {
     });
 }
 
+function removeCookie(session, cookieURL, name) {
+    debug('remove cookie %s from %s', name, cookieURL);
+    return new Promise((resolve, reject) => {
+        session.cookies.remove(cookieURL, name, (err) => {
+            if (err) {
+                return reject(err);
+            }
+            return resolve();
+        });
+    });
+}
+
 function getAccessTokenCookie(session, cookieURL) {
     return getCookie(session, cookieURL, 'access_token').then((res) => {
         debug('Access token cookie: %o', res);
@@ -52,7 +64,30 @@ function setAccessTokenCookie(session, cookieURL, accessToken, expiresIn) {
     return setCookie(session, cookieURL, 'access_token', accessToken, expireDate);
 }
 
+function removeAccessTokenCookie(session, cookieURL) {
+    return removeCookie(session, cookieURL, 'access_token');
+}
+
+/**
+ * Log user out by clearing all cookies.
+ * @returns {Promise} A fulfilled promise when cookies were destroyed and 
+ * rejected promise otherwise.
+ */
+function logout(session) {
+    return new Promise((resolve, reject) => {
+        session.clearStorageData((err) => {
+            if (err) {
+                return reject(err);
+            }
+            debug('Cleared session storage data');
+            return resolve();
+        });
+    });
+}
+
 module.exports = {
     getAccessTokenCookie,
     setAccessTokenCookie,
+    removeAccessTokenCookie,
+    logout,
 }
