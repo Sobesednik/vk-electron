@@ -9,13 +9,15 @@
   },
   "devDependencies": {
     "bower": "^1.7.9",
+    "electron-packager": "^7.3.0",
     "electron-prebuilt": "^1.2.7"
   },
   "scripts": {
     "electron": "DEBUG=* electron .",
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "bower install"
+    "postinstall": "bower install",
+    "build": "electron-packager . --platform=darwin --arch=x64 --asar --prune --out build"
   },
   "author": "Anton <anton@sobesednik.media>",
   "license": "MIT"

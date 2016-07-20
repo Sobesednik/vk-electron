@@ -39,3 +39,4 @@ jspm_packages
 html/bootstrap
 html/jquery.min.js
 bower_components
+build
