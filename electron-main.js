@@ -110,7 +110,7 @@ class App {
             .then(user => this.sendMessage('vkUser', user))
             .catch((err) => {
                 debug(err);
-                win.webContents.send('error', 'Could not login into VK');
+                this.sendMessage('error', 'Could not login into VK');
             });
     }
 
