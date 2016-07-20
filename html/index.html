@@ -39,56 +39,6 @@
   <script>window.$ = window.jQuery = require('../bower_components/jquery/dist/jquery.min.js');</script>
   <script src="../bower_components/noty/js/noty/packaged/jquery.noty.packaged.min.js"></script>
 
-  <script>
-      const n = noty({
-          text: 'noty - a jquery notification library!',
-          layout: 'topRight',
-          type: 'error',
-          timeout: 5000,
-          theme: 'relax',
-          animation: {
-              open: 'animated fadeInDown',
-              close: 'animated fadeOut',
-          },
-      });
-      
-      const {ipcRenderer} = require('electron');
-
-      function loaded() {
-          $('#div-loading').remove();
-          $('#div-loaded').show();
-      }
-      
-      function login() {
-          ipcRenderer.send('asynchronous-message', 'login');
-      }
-      function logout() {
-          ipcRenderer.send('asynchronous-message', 'logout');
-      }
-      
-      ipcRenderer.on('vkUser', (event, message) => {
-          $('#login-vk-button').hide();
-          $('#logout-vk-button').show();
-          $('#vk-name').html(`${message.first_name} ${message.last_name}`);
-      });
-      ipcRenderer.on('logout', (event, message) => {
-          $('#login-vk-button').show();
-          $('#logout-vk-button').hide();
-          $('#vk-name').html('');
-      });
-      
-      $('#login-vk-button').click(function () {
-          login();
-      });
-      $('#logout-vk-button').click(function () {
-          logout();
-      });
-      
-      ipcRenderer.on('loaded', () => {
-          loaded();
-      });
-
-      
-  </script>
+  <script src="js/index.js"></script>
 </body>
 </html>
