@@ -54,6 +54,10 @@ function getUser(access_token) {
     })
 }
 
+function getAlbums() {
+
+}
+
 /**
  * Check if token has got required permissions.
  * @param {string} token - the token to check permissions against
@@ -69,8 +73,24 @@ function checkTokenPermissions(token, flag) {
     });
 }
 
+class VK {
+    constructor(token) {
+        this.accessToken = token;
+    }
+    getAppPermissions() {
+        return getPermissions(this.accessToken);
+    }
+    getUser() {
+        return getUser(this.accessToken);
+    }
+    checkTokenPermissions(flag) {
+        return checkTokenPermissions(this.accessToken, flag);
+    }
+}
+
 module.exports = {
     getUser,
     checkTokenPermissions,
     flags,
+    VK,
 }

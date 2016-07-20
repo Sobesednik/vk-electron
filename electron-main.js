@@ -6,47 +6,9 @@ const debug = require('debug')('main');
 const lib = require('./lib');
 const vkLib = require('./vkLib');
 const VKError = require('./vkError');
+const VK = vkLib.VK;
 
 const COOKIE_URL = 'https://vk.sobesednik.media';
-
-let win;
-/**
- * Create main window.
- */
-function createWindow() {
-    win = new BrowserWindow({ width: 800, height: 600 });
-    win.openDevTools();
-    win.loadURL(`file://${__dirname}/html/index.html`);
-
-    const startVkLoginPromise = startVkLogin(getSession(), COOKIE_URL); // init
-
-    win.webContents.on('did-finish-load', () => {
-        startVkLoginPromise.then((res) => {
-            win.webContents.send('vkUser', res);
-        }, (err) => {
-            debug(err);
-            if (err instanceof VKError && err.code === VKError.AUTH_FAILED) {
-                lib.removeAccessTokenCookie(getSession(), COOKIE_URL);
-            }
-        }).then(() => {
-            win.webContents.send('loaded');
-        }, (err) => {
-            debug(err);
-        });
-    });
-}
-
-/**
- * Find a token in cookies and check if it has not expired and permissions are sufficient.
- * Also loads information about the current user.
- * @returns {Promise} A promise fulfilled with user information or rejected if could not login.
- */
-function startVkLogin(session, cookieUrl) {
-    return lib.getAccessTokenCookie(session, cookieUrl).then((accessToken) => {
-        debug('got token %o', accessToken);
-        return vkLib.checkTokenPermissions(accessToken, vkLib.flags.PHOTOS);
-    }).then(token => vkLib.getUser(token));
-}
 
 function getSession() {
     return session.defaultSession;
@@ -54,12 +16,10 @@ function getSession() {
 
 /**
  * Opens a new window to perform VK authentication.
- * @param {BrowserWindow} mainWin - main application window on top of which
- * the login window should be displayed.
  * @returns {Promise} A promise fillfilled with accessToken, userId and expiresIn values,
  * or rejected promise if login request was cancelled.
  */
-function loginVK(mainWin) {
+function authenticateVK(mainWin) {
     const URL = 'https://oauth.vk.com/authorize';
     const APP_ID = process.env.APP_ID || '5551949';
     const SCOPE = 'photos';
@@ -67,13 +27,10 @@ function loginVK(mainWin) {
 
     const vkurl = `${URL}?client_id=${APP_ID}&response_type=${RESPONSE_TYPE}&scope=${SCOPE}&display=popup`;
 
-    const win = new BrowserWindow({ height: 430, width: 655, show: false });
+    const win = new BrowserWindow({ parent: mainWin, height: 430, width: 655 });
 
     debug('open vk auth window %s', vkurl);
     win.loadURL(vkurl);
-    win.once('ready-to-show', () => {
-        win.show();
-    });
 
     return new Promise((resolve, reject) => {
         win.webContents.on('did-get-redirect-request', function (event, oldUrl, newUrl) {
@@ -104,27 +61,129 @@ function loginVK(mainWin) {
     });
 }
 
-ipcMain.on('asynchronous-message', (event, arg) => {
-  if (arg === 'login') {
-      loginVK(win).then((res) => {
-          return lib.setAccessTokenCookie(getSession(), COOKIE_URL, res.accessToken, res.expiresIn)
-              .then(() => {
-                  return startVkLogin(getSession(), COOKIE_URL).then((res) => {
-                      win.webContents.send('vkUser', res);
-                  });
-              });
-      }, (err) => {
-          debug(err);
-          win.webContents.send('error', 'Could not login into VK');
-      });
-  } else if (arg === 'logout') {
-      lib.logout(getSession()).then(() => {
-          win.webContents.send('logout');
-      });
-  }
-});
+class App {
+    constructor(session, cookieUrl, ipc) {
+        this.session = session;
+        this.cookieUrl = cookieUrl;
 
-app.on('ready', createWindow);
+        ipc.on('asynchronous-message', (event, arg) => {
+            switch (arg) {
+                case 'login':
+                    this.loginVK()
+                    break;
+                case 'logout':
+                    this.logout();
+            }
+        });
+
+        this.createWindow();
+    }
+
+    /**
+     * Remove all session cookies.
+     */
+    logout() {
+        lib.logout(this.session).then(() => {
+            this.sendMessage('logout');
+        });
+    }
+
+    /**
+     * Send a message to the renderer process.
+     * @param {string} channel - the channel
+     * @param {object} message - the message
+     */
+    sendMessage(channel, message) {
+        if (this.win && this.win.webContents) {
+            this.win.webContents.send(channel, message);
+        }
+    }
+
+    /**
+     * This function is invoked when users click on "login vk" button.
+     */
+    loginVK() {
+        return authenticateVK(this.win).then((res) =>
+            lib.setAccessTokenCookie(this.session, this.cookieUrl, res.accessToken, res.expiresIn)
+        )
+            .then(() => this.vkAuthFlow())
+            .then(user => this.sendMessage('vkUser', user))
+            .catch((err) => {
+                debug(err);
+                win.webContents.send('error', 'Could not login into VK');
+            });
+    }
+
+    /**
+     * Initialise VK object, check permissions and get information about current user.
+     */
+    vkAuthFlow() {
+        return this.createVK()
+            .then(() => this.checkPermissions())
+            .then(() => this.getUser())
+            .catch((err) => {
+                debug(err);
+                if (err instanceof VKError && err.code === VKError.AUTH_FAILED) {
+                    lib.removeAccessTokenCookie(this.session, this.cookieUrl);
+                }
+                throw err;
+            });
+    }
+
+    /**
+     * Create main window.
+     */
+    createWindow() {
+        const win = this.win = new BrowserWindow({ width: 800, height: 600 });
+
+        win.openDevTools();
+        win.loadURL(`file://${__dirname}/html/index.html`);
+
+        win.webContents.on('did-finish-load', () => {
+            this.vkAuthFlow()
+                .then(user => this.sendMessage('vkUser', user))
+                .catch(() => {})
+                .then(() => this.sendMessage('loaded'));
+        });
+
+    }
+
+    /**
+     * Find a token in cookies and create a new VK instance.
+     */
+    createVK() {
+        return lib.getAccessTokenCookie(this.session, this.cookieUrl).then((accessToken) => {
+            debug('Got token %o', accessToken);
+            this.vk = new VK(accessToken);
+        });
+    }
+
+    /**
+     * Check if access token ha
+     */
+    checkPermissions() {
+        if (!this.vk) {
+            return Promise.reject(new Error('VK object has not been initialised'));
+        }
+        return this.vk.checkTokenPermissions(vkLib.flags.PHOTOS);
+    }
+
+    /**
+     * Return information about current VK user.
+     */
+    getUser() {
+        if (!this.vk) {
+            return Promise.reject(new Error('VK object has not been initialised'));
+        }
+        return this.vk.getUser();
+    }
+}
+
+function main() {
+    const vkapp = new App(getSession(), COOKIE_URL, ipcMain);
+}
+
+app.on('ready', main);
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
