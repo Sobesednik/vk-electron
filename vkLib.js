@@ -1,5 +1,11 @@
 const request = require('request');
 const debug = require('debug')('vkLib');
+const VKError = require('./vkError');
+
+const flags = {
+    PHOTOS: 4,
+    MESSAGES: 4096,
+}
 
 function req(options) {
     return new Promise((resolve, reject) => {
@@ -23,7 +29,7 @@ function vkApiRequest(method, options) {
         const result = JSON.parse(res);
         debug('vk api result: %o', result);
         if ('error' in result) {
-            throw new Error(result.error.error_msg);
+            throw new VKError(result.error);
         }
         if ('response' in result) {
             return result.response;
@@ -48,7 +54,23 @@ function getUser(access_token) {
     })
 }
 
+/**
+ * Check if token has got required permissions.
+ * @param {string} token - the token to check permissions against
+ * @param {int} flag - the required permission flag
+ */
+function checkTokenPermissions(token, flag) {
+    return getPermissions(token).then((res) => {
+        debug('Permissions: %s', res);
+        if (!(res & flag)) {
+            throw new Error(`No access for +${flag}`);
+        }
+        return token;
+    });
+}
+
 module.exports = {
-    getPermissions,
     getUser,
+    checkTokenPermissions,
+    flags,
 }
