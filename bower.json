@@ -14,6 +14,7 @@
   "dependencies": {
     "bootstrap": "^3.3.6",
     "animate.css": "^3.5.2",
-    "noty": "^2.3.8"
+    "noty": "^2.3.8",
+    "jquery": "^3.1.0"
   }
 }

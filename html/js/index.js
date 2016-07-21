@@ -14,28 +14,26 @@ function showError(message) {
     });
 }
 
-function loaded() {
-    $('#div-loading').remove();
-    $('#div-loaded').show();
-}
-
 function login() {
-    ipcRenderer.send('asynchronous-message', 'login');
+    ipcRenderer.send('asynchronous-message', 'loginVK');
+}
+function auth() {
+    ipcRenderer.send('asynchronous-message', 'authVK');
 }
 function logout() {
     ipcRenderer.send('asynchronous-message', 'logout');
 }
 
-ipcRenderer.on('vkUser', (event, message) => {
+ipcRenderer.on('authVK', (event, message) => {
     $('#login-vk-button').hide();
     $('#logout-vk-button').show();
-    $('#vk-name').html(`${message.first_name} ${message.last_name}`);
-    getAlbums();
+    const div = createVkProfileDiv(`${message.first_name} ${message.last_name}`, message.photo);
+    $('#vk-auth').prepend(div);
 });
 ipcRenderer.on('logout', (event, message) => {
     $('#login-vk-button').show();
     $('#logout-vk-button').hide();
-    $('#vk-name').html('');
+    $('#vk-auth .vk-profile').remove();
 });
 
 $('#login-vk-button').click(function () {
@@ -54,10 +52,4 @@ ipcRenderer.on('loaded', () => {
     loaded();
 });
 
-function getAlbums() {
-    ipcRenderer.send('asynchronous-message', 'getAlbums');
-}
-
-ipcRenderer.on('albums', (event, message) => {
-     console.log(message);
-});
+auth();

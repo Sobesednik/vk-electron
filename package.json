@@ -5,6 +5,11 @@
   "main": "electron-main.js",
   "dependencies": {
     "debug": "^2.2.0",
+    "koa": "^1.2.0",
+    "koa-router": "^5.4.0",
+    "koa-static": "^2.0.0",
+    "koa-views": "^4.1.0",
+    "nunjucks": "^2.4.2",
     "request": "^2.73.0"
   },
   "devDependencies": {
@@ -13,7 +18,7 @@
     "electron-prebuilt": "^1.2.7"
   },
   "scripts": {
-    "electron": "DEBUG=* electron .",
+    "electron": "DEBUG=app:* electron .",
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "bower install",

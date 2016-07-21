@@ -1,0 +1,43 @@
+{% extends "views/layouts/main.html" %}
+{% block header %}
+    <title>Hello world</title>
+    <style>
+        .vk-profile img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+        .vk-profile {
+            display: inline-block;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div id="vk-profile" style="display:none;" class="vk-profile">
+        <img src="#" alt="">
+        <span></span>
+    </div>
+    <div class="row">
+      <div id="vk-auth" class="col-xs-12">
+          <button id="login-vk-button" class="btn btn-sm btn-primary">Login VK</button>
+          <button id="logout-vk-button" style="display:none;" class="btn btn-sm btn-primary">Logout VK</button>
+      </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        function createVkProfileDiv(name, photo) {
+            const div = $('#vk-profile').clone();
+            div.removeAttr('id');
+            div.removeAttr('style');
+            const img = div.find('img');
+            img.attr('src', photo);
+            img.attr('alt', name);
+            div.find('span').html(name);
+            return div;
+        }
+    </script>
+    <script src="index.js"></script>
+{% endblock %}

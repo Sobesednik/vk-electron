@@ -1,5 +1,5 @@
 const request = require('request');
-const debug = require('debug')('vkLib');
+const debug = require('debug')('app:vkLib');
 const VKError = require('./vkError');
 
 const flags = {
@@ -46,6 +46,7 @@ function getPermissions(access_token) {
 function getUser(access_token) {
     return vkApiRequest('users.get', {
         access_token,
+        fields: 'photo',
     }).then((res) => {
         if (res.length) {
             return res[0];

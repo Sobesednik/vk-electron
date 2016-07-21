@@ -2,10 +2,11 @@ const electron = require('electron');
 const {session, app, ipcMain, BrowserWindow} = electron;
 const url = require('url');
 const qs = require('querystring');
-const debug = require('debug')('main');
+const debug = require('debug')('app:main');
 const lib = require('./lib');
 const vkLib = require('./vkLib');
 const VKError = require('./vkError');
+const Server = require('./server')
 const VK = vkLib.VK;
 
 const COOKIE_URL = 'https://vk.sobesednik.media';
@@ -67,9 +68,21 @@ class App {
         this.cookieUrl = cookieUrl;
 
         ipc.on('asynchronous-message', (event, arg) => {
+            debug('async message %s', arg);
             switch (arg) {
-                case 'login':
-                    this.loginVK()
+                case 'authVK':
+                    this.vkAuthFlow().then((user) => {
+                        this.sendMessage('authVK', user);
+                    }, (err) => {
+                        this.sendError('error', err);
+                    });
+                    break;
+                case 'loginVK':
+                    this.loginVK().then((user) => {
+                        this.sendMessage('authVK', user);
+                    }, (err) => {
+                        this.sendError('error', err);
+                    });
                     break;
                 case 'logout':
                     this.logout();
@@ -102,6 +115,9 @@ class App {
             this.win.webContents.send(channel, message);
         }
     }
+    sendError(channel, error) {
+        this.sendMessage(channel, error.message);
+    }
 
     /**
      * This function is invoked when users click on "login vk" button.
@@ -110,12 +126,12 @@ class App {
         return authenticateVK(this.win).then((res) =>
             lib.setAccessTokenCookie(this.session, this.cookieUrl, res.accessToken, res.expiresIn)
         )
-            .then(() => this.vkAuthFlow())
-            .then(user => this.sendMessage('vkUser', user))
-            .catch((err) => {
-                debug(err);
-                this.sendMessage('error', 'Could not login into VK');
-            });
+            .then(() => this.vkAuthFlow());
+//            .then(user => this.sendMessage('vkUser', user))
+//            .catch((err) => {
+//                debug(err);
+//                this.sendMessage('error', 'Could not login into VK');
+//            });
     }
 
     /**
@@ -141,19 +157,24 @@ class App {
         const win = this.win = new BrowserWindow({ width: 800, height: 600 });
 
         win.openDevTools();
-        win.loadURL(`file://${__dirname}/html/index.html`);
+        win.loadURL(`file://${__dirname}/html/loading.html`);
 
-        win.webContents.on('did-finish-load', () => {
-            this.vkAuthFlow()
-                .then(user => this.sendMessage('vkUser', user))
-                .catch(() => {})
-                .then(() => this.sendMessage('loaded'));
+        const server = this.server = new Server();
+        const serverStartPromise = server.start(3000);
+
+        // const p = this.vkAuthFlow();
+
+        win.webContents.once('did-finish-load', () => {
+            serverStartPromise.then(() => {
+                win.loadURL('http://localhost:3000/');
+            });
         });
-
     }
 
     /**
      * Find a token in cookies and create a new VK instance.
+     * @returns {Promise} A promise resolved with VK object or rejected promise if token
+     * could not be found in cookies.
      */
     createVK() {
         return lib.getAccessTokenCookie(this.session, this.cookieUrl).then((accessToken) => {
@@ -163,7 +184,7 @@ class App {
     }
 
     /**
-     * Check if access token ha
+     * Check if access token has required permissions.
      */
     checkPermissions() {
         if (!this.vk) {
