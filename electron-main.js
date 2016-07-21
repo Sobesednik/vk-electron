@@ -73,6 +73,10 @@ class App {
                     break;
                 case 'logout':
                     this.logout();
+                    break;
+                case 'getAlbums':
+                    this.getAlbums();
+                    break;
             }
         });
 
@@ -176,6 +180,15 @@ class App {
             return Promise.reject(new Error('VK object has not been initialised'));
         }
         return this.vk.getUser();
+    }
+
+    getAlbums() {
+        if (!this.vk) {
+            return Promise.reject(new Error('VK object has not been initialised'));
+        }
+        return this.vk.getAlbums().then((res) => {
+            this.sendMessage('albums', res);
+        });
     }
 }
 

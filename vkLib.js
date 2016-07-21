@@ -86,11 +86,17 @@ class VK {
     checkTokenPermissions(flag) {
         return checkTokenPermissions(this.accessToken, flag);
     }
+    getAlbums() {
+        return vkApiRequest('photos.getAlbums', {
+            need_system: 1,
+            need_covers: 1,
+            photo_sizes: 1,
+            access_token: this.accessToken,
+        });
+    }
 }
 
 module.exports = {
-    getUser,
-    checkTokenPermissions,
     flags,
     VK,
 }
