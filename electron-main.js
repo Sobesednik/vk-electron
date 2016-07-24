@@ -8,59 +8,72 @@ const vkLib = require('./vkLib');
 const VKError = require('./vkError');
 const Server = require('./server')
 const VK = vkLib.VK;
+const authenticateVK = require('electron-vk-oauth2');
 
 const COOKIE_URL = 'https://vk.sobesednik.media';
 
 function getSession() {
     return session.defaultSession;
 }
-
-/**
- * Opens a new window to perform VK authentication.
- * @returns {Promise} A promise fillfilled with accessToken, userId and expiresIn values,
- * or rejected promise if login request was cancelled.
- */
-function authenticateVK(mainWin) {
-    const URL = 'https://oauth.vk.com/authorize';
-    const APP_ID = process.env.APP_ID || '5551949';
-    const SCOPE = 'photos';
-    const RESPONSE_TYPE = 'token';
-
-    const vkurl = `${URL}?client_id=${APP_ID}&response_type=${RESPONSE_TYPE}&scope=${SCOPE}&display=popup`;
-
-    const win = new BrowserWindow({ parent: mainWin, height: 430, width: 655 });
-
-    debug('open vk auth window %s', vkurl);
-    win.loadURL(vkurl);
-
-    return new Promise((resolve, reject) => {
-        win.webContents.on('did-get-redirect-request', function (event, oldUrl, newUrl) {
-            const data = url.parse(newUrl);
-            debug(data);
-            if (data.host === 'oauth.vk.com' && data.pathname === '/blank.html') {
-                const query = qs.parse(data.hash.substring(1));
-                win.destroy();
-                debug(query);
-                return resolve({
-                    accessToken: query.access_token,
-                    userId: query.user_id,
-                    expiresIn: query.expires_in,
-                });
-
-            } else if (data.host === 'login.vk.com') {
-                if (!data.hash) {
-                    return;
-                }
-                const query = qs.parse(data.hash.substring(1));
-                if ('error' in query) {
-                    debug(query);
-                    win.destroy();
-                    return reject(new Error(`${query.error_reason}: ${query.error_description}`));
-                }
-            }
-        });
-    });
-}
+//
+///**
+// * Opens a new window to perform VK authentication.
+// * @returns {Promise} A promise fillfilled with accessToken, userId and expiresIn values,
+// * or rejected promise if login request was cancelled.
+// */
+//function authenticateVK(mainWin) {
+//    const URL = 'https://oauth.vk.com/authorize';
+//    const APP_ID = process.env.APP_ID || '5551949';
+//    const SCOPE = 'photos';
+//    const RESPONSE_TYPE = 'token';
+//    const DISPLAY = 'popup';
+//    const state = Math.floor(Math.random() * 10000);
+//
+//    const query = qs.stringify({
+//        state,
+//        client_id: APP_ID,
+//        response_type: RESPONSE_TYPE,
+//        scope: SCOPE,
+//        display: DISPLAY,
+//        revoke: 1,
+//        redirect_uri: 'https://oauth.vk.com/blank.html',
+//    });
+//
+//    const vkurl = `${URL}?${query}`;
+//
+//    const win = new BrowserWindow({ parent: mainWin, height: 430, width: 655 });
+//
+//    debug('open vk auth window %s', vkurl);
+//    win.loadURL(vkurl);
+//
+//    return new Promise((resolve, reject) => {
+//        win.webContents.on('did-get-redirect-request', function (event, oldUrl, newUrl) {
+//            const data = url.parse(newUrl);
+//            debug(data);
+//            // http://stackoverflow.com/questions/16733863/oauth2-0-implicit-grant-flow-why-use-url-hash-fragments
+//            if (data.host === 'oauth.vk.com' && data.pathname === '/blank.html' && data.hash) {
+//                const query = qs.parse(data.hash.substring(1));
+//                debug(query);
+//
+//                if(!('state' in query && query.state === String(state))) {
+//                    reject(new Error(`Incorrect state: expected ${query.state} to equal ${state}`));
+//                } else if ('error' in query) {
+//                    reject(new Error(query.error_description));
+//                } else if ('access_token' in query && 'user_id' in query && 'expires_in' in query) {
+//                    resolve({
+//                        accessToken: query.access_token,
+//                        userId: query.user_id,
+//                        expiresIn: query.expires_in,
+//                    });
+//                }
+//                win.destroy();
+//            }
+//        });
+//        win.on('closed', () => {
+//            reject(new Error('Auth window was closed before completing authentication'))
+//        });
+//    });
+//}
 
 class App {
     constructor(session, cookieUrl, ipc) {
@@ -123,7 +136,19 @@ class App {
      * This function is invoked when users click on "login vk" button.
      */
     loginVK() {
-        return authenticateVK(this.win).then((res) =>
+        return authenticateVK({
+            appId: '5551949',
+            scope: 'photos',
+            revoke: true,
+            display: 'page',
+        }, {
+            width: 1024,
+            height: 720,
+            minimizable: false,
+            maximizable: false,
+            resizable: false,
+            parent: this.win,
+        }).then((res) =>
             lib.setAccessTokenCookie(this.session, this.cookieUrl, res.accessToken, res.expiresIn)
         )
             .then(() => this.vkAuthFlow());
