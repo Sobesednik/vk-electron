@@ -13,11 +13,15 @@
     "request": "^2.73.0"
   },
   "devDependencies": {
+    "babel-plugin-syntax-async-functions": "^6.13.0",
+    "babel-plugin-transform-async-to-generator": "^6.16.0",
+    "babel-register": "^6.18.0",
     "bower": "^1.7.9",
     "electron-packager": "^7.3.0",
     "electron-prebuilt": "^1.2.7"
   },
   "scripts": {
+    "electron-watch": "DEBUG=app:*,electron-vk-oauth2 nodemon node_modules/.bin/electron .",
     "electron": "DEBUG=app:*,electron-vk-oauth2 electron .",
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
