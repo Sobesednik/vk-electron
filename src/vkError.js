@@ -9,7 +9,7 @@ class VKError extends Error {
         this.code = error.error_code;
         this.requestParams = error.request_params;
     }
-    
+
     static get AUTH_FAILED() {
         return 5;
     }

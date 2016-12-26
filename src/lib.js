@@ -26,7 +26,7 @@ async function removeAccessTokenCookie(session, cookieURL) {
 
 /**
  * Log user out by clearing all cookies.
- * @returns {Promise} A fulfilled promise when cookies were destroyed and 
+ * @returns {Promise} A fulfilled promise when cookies were destroyed and
  * rejected promise otherwise.
  */
 function logout(session) {
