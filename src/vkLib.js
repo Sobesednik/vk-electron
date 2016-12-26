@@ -8,51 +8,48 @@ const flags = {
 }
 
 function req(options) {
-    return new Promise((resolve, reject) => {
-        function callback(error, response, body) {
+    return new Promise((resolve, reject) => 
+        request(options, (error, response, body) => {
             if (error) {
                 return reject(error);
             }
             return resolve(body);
-        }
-        request(options, callback);
-    });
+        })
+    );
 }
 
-function vkApiRequest(method, options) {
+async function vkApiRequest(method, options) {
     const opts = {
         url: `https://api.vk.com/method/${method}`,
         qs: options,
     };
     debug('vk api request: %o', opts);
-    return req(opts).then((res) => {
-        const result = JSON.parse(res);
-        debug('vk api result: %o', result);
-        if ('error' in result) {
-            throw new VKError(result.error);
-        }
-        if ('response' in result) {
-            return result.response;
-        }
-    });
+    const res = await req(opts); 
+    const result = JSON.parse(res);
+    debug('vk api result: %o', result);
+    if ('error' in result) {
+        throw new VKError(result.error);
+    }
+    if ('response' in result) {
+        return result.response;
+    }
 }
 
-function getPermissions(access_token) {
-    return vkApiRequest('account.getAppPermissions', {
+async function getPermissions(access_token) {
+    return await vkApiRequest('account.getAppPermissions', {
         access_token,
     });
 }
 
-function getUser(access_token) {
-    return vkApiRequest('users.get', {
+async function getUser(access_token) {
+    const res = await vkApiRequest('users.get', {
         access_token,
         fields: 'photo',
-    }).then((res) => {
-        if (res.length) {
-            return res[0];
-        }
-        throw new Error('Could not get information about user');
     })
+    if (res.length) {
+        return res[0];
+    }
+    throw new Error('Could not get information about user');
 }
 
 function getAlbums() {
@@ -64,14 +61,13 @@ function getAlbums() {
  * @param {string} token - the token to check permissions against
  * @param {int} flag - the required permission flag
  */
-function checkTokenPermissions(token, flag) {
-    return getPermissions(token).then((res) => {
-        debug('Permissions: %s', res);
-        if (!(res & flag)) {
-            throw new Error(`No access for +${flag}`);
-        }
-        return token;
-    });
+async function checkTokenPermissions(token, flag) {
+    const res = await getPermissions(token);
+    debug('Permissions: %s', res);
+    if (!(res & flag)) {
+        throw new Error(`No access for +${flag}`);
+    }
+    return token;
 }
 
 class VK {
