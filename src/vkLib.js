@@ -8,7 +8,7 @@ const flags = {
 }
 
 function req(options) {
-    return new Promise((resolve, reject) => 
+    return new Promise((resolve, reject) =>
         request(options, (error, response, body) => {
             if (error) {
                 return reject(error);
@@ -24,7 +24,7 @@ async function vkApiRequest(method, options) {
         qs: options,
     };
     debug('vk api request: %o', opts);
-    const res = await req(opts); 
+    const res = await req(opts);
     const result = JSON.parse(res);
     debug('vk api result: %o', result);
     if ('error' in result) {

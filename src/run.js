@@ -5,7 +5,6 @@ const qs = require('querystring');
 const authenticateVK = require('electron-vk-oauth2');
 const debug = require('debug')('app:main');
 const lib = require('./lib');
-const Server = require('./server')
 const VKError = require('./vkError');
 const vkLib = require('./vkLib');
 const VK = vkLib.VK;
@@ -15,10 +14,14 @@ const COOKIE_URL = 'https://vk.sobesednik.media';
 function getSession() {
     return session.defaultSession;
 }
-    
+
 process.on('unhandledRejection', (reason, promise) => {
     console.log(promise);
 });
+
+if (process.env.NODE_ENV === 'development') {
+    require('electron-reload')(__dirname)
+}
 
 //
 ///**
@@ -90,18 +93,20 @@ async function onAsyncMessage(event, arg) {
             try {
                 const user = await this.vkAuthFlow()
                 debug('authVK: got user after auth', user);
-                this.sendMessage('authVK', user)
+                this.sendMessage('loginVK', user);
             } catch(err) {
-                this.sendError('error', err);
+                this.sendMessage('loginVK', { error: err.message })
+                // this.sendError('error', err);
             }
             break;
         case 'loginVK':
             try {
                 const user = await this.loginVK();
                 debug('user after login', user);
-                this.sendMessage('authVK', user);
+                this.sendMessage('loginVK', user);
             } catch(err) {
-                this.sendError('error', err);
+                this.sendMessage('loginVK', { error: err.message })
+                // this.sendError('error', err);
             }
             break;
         case 'logout':
@@ -203,18 +208,25 @@ class App {
     createWindow() {
         const win = this.win = new BrowserWindow({ width: 800, height: 600 });
 
+        win.loadURL(`http://localhost:3000`)
         win.openDevTools();
-        win.loadURL(`file://${__dirname}/html/loading.html`);
 
-        const server = this.server = new Server();
-        const serverStartPromise = server.start(3000);
+        // if (process.env.NODE_ENV === 'development') {
+        // } else {
+        //     win.loadURL(`file://${__dirname}/index.html`)
+        // }
+
+        // win.loadURL(`file://${__dirname}/html/loading.html`);
+
+        // const server = this.server = new Server();
+        // const serverStartPromise = server.start(3000);
 
         // const p = this.vkAuthFlow();
 
-        win.webContents.once('did-finish-load', async () => {
-            await serverStartPromise;
-            win.loadURL('http://localhost:3000/');
-        });
+        // win.webContents.once('did-finish-load', async () => {
+        //     await serverStartPromise;
+        //     win.loadURL('http://localhost:3000/');
+        // });
     }
 
     /**
@@ -259,7 +271,7 @@ class App {
             throw new Error('VK object has not been initialised');
         }
         const albums = await this.vk.getAlbums();
-        debug('getAlbums', albums);        
+        debug('getAlbums', albums);
         return albums;
     }
 }
