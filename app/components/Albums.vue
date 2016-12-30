@@ -27,7 +27,7 @@
         },
         methods: {
             getAlbumLink: function (item) {
-                return String(item.aid);
+                return `/albums/${item.aid}/`;
             },
         }
     }

@@ -37,8 +37,6 @@
         });
     }
 
-    const Auth = require('./components/Auth.vue')
-
     module.exports = {
         data: () => ({ msg: 123 }),
     }

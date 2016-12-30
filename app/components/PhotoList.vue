@@ -1,7 +1,7 @@
 <template>
     <div class="photo-list-component">
         <template v-for="item in partitioned">
-            <router-link :to="getItemLink(item)" append>
+            <router-link :to="getItemLink(item)">
                 <div class="div-partition" :style="getPartitionCss(item.partition)">
                     <component :is="descriptionComponent" :item="item"></component>
                     <img :src="item.partition.src" :alt="item.title">

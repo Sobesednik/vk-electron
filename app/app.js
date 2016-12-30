@@ -1,7 +1,6 @@
 require('animate.css')
-require('lazy-vue')
-const noty = require('noty');
 require('bootstrap/dist/css/bootstrap.css');
+const noty = require('noty');
 
 const Vue = require('vue')
 const App = require('./App.vue')
@@ -13,6 +12,7 @@ const VueBreadcrumbs = require('vue2-breadcrumbs')
 
 const Albums = require('./components/Albums.vue')
 const Album = require('./components/Album.vue')
+const Comments = require('./components/Comments.vue')
 
 Vue.use(VueRouter)
 Vue.use(VueBreadcrumbs)
@@ -28,7 +28,22 @@ const router = new VueRouter({
             component: Albums,
             meta: { breadcrumb: 'Albums' },
          },
-        { path: '/albums/:id', component: Album, meta: { breadcrumb: 'Album' } },
+        {
+            path: '/albums/:aid',
+            component: Album,
+            children: [
+                {
+                    path: '',
+                },
+                {
+                    path: 'photos',
+                },
+                {
+                    path: 'comments',
+                    component: Comments
+                }
+            ]
+        },
     ],
 })
 

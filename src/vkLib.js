@@ -106,6 +106,13 @@ class VK {
             rev: 1,
         })
     }
+    getComments(aid) {
+        return vkApiRequest('photos.getAllComments', {
+            access_token: this.accessToken,
+            album_id: aid,
+            need_likes: 1,
+        })
+    }
 }
 
 module.exports = {

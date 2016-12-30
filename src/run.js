@@ -89,8 +89,8 @@ async function onAsyncMessage(event, arg, arg2) {
 
     debug('async message', arg);
     if (arg.getAlbum) {
-        const id = parseInt(arg.getAlbum, 10);
-        const albums = await this.vk.getAlbum(id);
+        const id = parseInt(arg.getAlbum, 10)
+        const albums = await this.vk.getAlbum(id)
         const album = albums.filter(a => a.aid === id)
         if (!album.length) {
             return this.sendMessage('getAlbum', { error: 'Album not found' })
@@ -100,10 +100,17 @@ async function onAsyncMessage(event, arg, arg2) {
         return;
     }
     if (arg.getPhotos) {
-        const aid = parseInt(arg.getPhotos, 10);
-        const photos = await this.vk.getPhotos(aid);
+        const aid = parseInt(arg.getPhotos, 10)
+        const photos = await this.vk.getPhotos(aid)
         debug('photos', photos)
         this.sendMessage('getPhotos', photos)
+        return;
+    }
+    if (arg.getComments) {
+        const aid = parseInt(arg.getComments.aid, 10)
+        const comments = await this.vk.getComments(aid)
+        debug('comments', comments)
+        this.sendMessage('getComments', comments)
         return;
     }
 
