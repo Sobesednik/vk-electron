@@ -52,10 +52,6 @@ async function getUser(access_token) {
     throw new Error('Could not get information about user');
 }
 
-function getAlbums() {
-
-}
-
 /**
  * Check if token has got required permissions.
  * @param {string} token - the token to check permissions against
@@ -74,6 +70,9 @@ class VK {
     constructor(token) {
         this.accessToken = token;
     }
+    logout() {
+        delete this.accessToken;
+    }
     getAppPermissions() {
         return getPermissions(this.accessToken);
     }
@@ -85,11 +84,34 @@ class VK {
     }
     getAlbums() {
         return vkApiRequest('photos.getAlbums', {
+            access_token: this.accessToken,
             need_system: 1,
             need_covers: 1,
             photo_sizes: 1,
-            access_token: this.accessToken,
         });
+    }
+    getAlbum(id) {
+        return vkApiRequest('photos.getAlbums', {
+            access_token: this.accessToken,
+            album_ids: id,
+            need_covers: 1,
+            photo_sizes: 1,
+        })
+    }
+    getPhotos(aid) {
+        return vkApiRequest('photos.get', {
+            access_token: this.accessToken,
+            album_id: aid,
+            photo_sizes: 1,
+            rev: 1,
+        })
+    }
+    getComments(aid) {
+        return vkApiRequest('photos.getAllComments', {
+            access_token: this.accessToken,
+            album_id: aid,
+            need_likes: 1,
+        })
     }
 }
 

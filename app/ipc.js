@@ -10,7 +10,6 @@ function createIpcPromise(event) {
             }
             return resolve(message);
         }
-        console.log(ipcRenderer)
         ipcRenderer.on(event, handler);
     });
 }

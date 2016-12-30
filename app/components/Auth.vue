@@ -1,11 +1,13 @@
 <template>
-    <div id="vk-auth" class="col-xs-12">
-        <div v-if="user" class="vk-profile">
-            <img v-bind:src="photo" v-bind:alt="name">
-            <span>{{ name }}</span>
+    <div id="vk-auth" class="row">
+        <div class="col-xs-12">
+            <div v-if="user" class="vk-profile">
+                <img :src="photo" :alt="name">
+                <span>{{ name }}</span>
+            </div>
+            <button :disabled="loading" v-if="!user" class="btn btn-sm btn-primary" @click="signin">Login VK</button>
+            <button :disabled="loading" v-if="user" class="btn btn-sm btn-primary" @click="signout">Logout VK</button>
         </div>
-        <button v-bind:disabled="loading" v-if="!user" class="btn btn-sm btn-primary" v-on:click="signin">Login VK</button>
-        <button v-bind:disabled="loading" v-if="user" class="btn btn-sm btn-primary" v-on:click="signout">Logout VK</button>
     </div>
 </template>
 
@@ -72,5 +74,8 @@
     }
     .vk-profile {
         display: inline-block;
+    }
+    #vk-auth {
+        text-align: right;
     }
 </style>

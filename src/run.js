@@ -83,11 +83,37 @@ if (process.env.NODE_ENV === 'development') {
 //    });
 //}
 
-async function onAsyncMessage(event, arg) {
+async function onAsyncMessage(event, arg, arg2) {
     // ctx = app (for koa!!!)
     // this = app;
 
-    debug('async message %s', arg);
+    debug('async message', arg);
+    if (arg.getAlbum) {
+        const id = parseInt(arg.getAlbum, 10)
+        const albums = await this.vk.getAlbum(id)
+        const album = albums.filter(a => a.aid === id)
+        if (!album.length) {
+            return this.sendMessage('getAlbum', { error: 'Album not found' })
+        }
+        debug('album', album)
+        this.sendMessage('getAlbum', album[0])
+        return;
+    }
+    if (arg.getPhotos) {
+        const aid = parseInt(arg.getPhotos, 10)
+        const photos = await this.vk.getPhotos(aid)
+        debug('photos', photos)
+        this.sendMessage('getPhotos', photos)
+        return;
+    }
+    if (arg.getComments) {
+        const aid = parseInt(arg.getComments.aid, 10)
+        const comments = await this.vk.getComments(aid)
+        debug('comments', comments)
+        this.sendMessage('getComments', comments)
+        return;
+    }
+
     switch (arg) {
         case 'authVK':
             try {
@@ -110,11 +136,15 @@ async function onAsyncMessage(event, arg) {
             }
             break;
         case 'logout':
-            await this.logout();
+            const res = await this.logout();
+            this.sendMessage('logout', res);
             break;
         case 'getAlbums':
-            await this.getAlbums();
+            const albums = await this.getAlbums()
+            debug('albums', albums)
+            this.sendMessage('getAlbums', albums)
             break;
+
     }
 }
 
@@ -133,7 +163,8 @@ class App {
      */
     async logout() {
         const res = await lib.logout(this.session)
-        this.sendMessage('logout');
+        this.vk.logout()
+        return res
     }
 
     /**
