@@ -25,6 +25,7 @@ async function vkApiRequest(method, options) {
     };
     debug('vk api request: %o', opts);
     const res = await req(opts);
+    console.log(res)
     const result = JSON.parse(res);
     debug('vk api result: %o', result);
     if ('error' in result) {
@@ -111,6 +112,14 @@ class VK {
             access_token: this.accessToken,
             album_id: aid,
             need_likes: 1,
+        })
+    }
+    getUserPhoto(id, photoSize) {
+        const size = photoSize in ['50', '100', '200_orig', '400_orig', 'max', 'max_orig'] ? size : '50'
+        const sizeString = `photo_${size}`
+        return vkApiRequest('users.get', {
+            user_ids: [ id ],
+            fields: [ sizeString ]
         })
     }
 }

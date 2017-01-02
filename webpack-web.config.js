@@ -49,30 +49,29 @@ module.exports = {
     performance: {
         hints: false
     },
-    target: 'electron-renderer',
 }
 
-module.exports.plugins = [
-    new webpack.ProvidePlugin({
-        $: "jquery",
-        jQuery: "jquery",
-        jquery: "jquery",
-    }),
-]
+// module.exports.plugins = [
+//     new webpack.ProvidePlugin({
+//         $: "jquery",
+//         jQuery: "jquery",
+//         jquery: "jquery",
+//     }),
+// ]
 
-if (process.env.NODE_ENV === 'production') {
-    module.exports.plugins = [
-        new webpack.DefinePlugin({
-            'process.env': {
-                NODE_ENV: '"production"'
-            }
-        }),
-        // new webpack.optimize.UglifyJsPlugin({
-        //     compress: {
-        //         warnings: false
-        //     }
-        // })
-    ]
-} else {
-    module.exports.devtool = '#source-map'
-}
+// if (process.env.NODE_ENV === 'production') {
+//     module.exports.plugins = [
+//         new webpack.DefinePlugin({
+//             'process.env': {
+//                 NODE_ENV: '"production"'
+//             }
+//         }),
+//         // new webpack.optimize.UglifyJsPlugin({
+//         //     compress: {
+//         //         warnings: false
+//         //     }
+//         // })
+//     ]
+// } else {
+//     module.exports.devtool = '#source-map'
+// }

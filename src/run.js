@@ -113,6 +113,15 @@ async function onAsyncMessage(event, arg, arg2) {
         this.sendMessage('getComments', comments)
         return;
     }
+    if (arg.getUserPhoto) {
+        console.log('get user photo')
+        const id = arg.getUserPhoto.id
+        const size = arg.getUserPhoto.size
+        const userPhoto = await this.vk.getUserPhoto(id, size)
+        debug('photo', userPhoto)
+        this.sendMessage('getUserPhoto', userPhoto)
+        return
+    }
 
     switch (arg) {
         case 'authVK':
