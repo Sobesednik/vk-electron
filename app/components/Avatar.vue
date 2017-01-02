@@ -20,8 +20,7 @@
             },
         },
         created: async function () {
-            const res = await ipc.send({ getUserPhoto: { id: this.id, size: '50' } }, 'getUserPhoto')
-            const user = res[0]
+            const user = await ipc.send('getUserPhoto', { id: this.id, size: '50' })
             this.first_name = user.first_name
             this.last_name = user.last_name
             this.photo = user.photo_50

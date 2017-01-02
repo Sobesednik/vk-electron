@@ -1,23 +1,30 @@
-const { ipcRenderer } = require('electron');
+const { ipcRenderer } = require('electron')
 
-function createIpcPromise(event) {
+function getRandomId() {
+    return Math.floor(Math.random() * 1000000)
+}
+
+function createIpcPromise(mid) {
     return new Promise((resolve, reject) => {
         const handler = (e, message) => {
-            console.log(`${event} response`, e, message);
-            ipcRenderer.removeListener(event, handler);
+            console.log(`${mid} response`, message)
+            ipcRenderer.removeListener(mid, handler)
             if (message && message.error) {
-                return reject(message.error);
+                return reject(message.error)
             }
-            return resolve(message);
+            return resolve(message)
         }
-        ipcRenderer.on(event, handler);
+        ipcRenderer.on(mid, handler)
     });
 }
 
-function send(data, listener) {
-    const p = createIpcPromise(listener || data);
-    ipcRenderer.send('asynchronous-message', data);
-    return p;
+function send(method, data) {
+    const mid = String(getRandomId())
+    const p = createIpcPromise(mid)
+    const message = { mid, method, data }
+    console.log('sending message', message)
+    ipcRenderer.send('asynchronous-message', message)
+    return p
 }
 
 module.exports = {

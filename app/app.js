@@ -14,13 +14,16 @@ const Albums = require('./components/Albums.vue')
 const Album = require('./components/Album.vue')
 const Comments = require('./components/Comments.vue')
 const Avatar = require('./components/Avatar.vue')
+const SimpleAvatar = require('./components/SimpleAvatar.vue')
 
 Vue.use(VueRouter)
 Vue.use(VueBreadcrumbs)
 
 Vue.component('Auth', Auth)
 Vue.component('photo-list', PhotoList)
-Vue.component('avatar', Avatar)
+// Vue.component('avatar', Avatar)
+Vue.component('simple-avatar', SimpleAvatar)
+
 
 const router = new VueRouter({
     routes: [

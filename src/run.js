@@ -7,162 +7,21 @@ const debug = require('debug')('app:main');
 const lib = require('./lib');
 const VKError = require('./vkError');
 const vkLib = require('./vkLib');
+const api = require('./api')
 const VK = vkLib.VK;
 
 const COOKIE_URL = 'https://vk.sobesednik.media';
 
-function getSession() {
-    return session.defaultSession;
-}
+const getSession = () => session.defaultSession
 
-process.on('unhandledRejection', (reason, promise) => {
-    console.log(promise);
-});
-
-if (process.env.NODE_ENV === 'development') {
-    require('electron-reload')(__dirname)
-}
-
-//
-///**
-// * Opens a new window to perform VK authentication.
-// * @returns {Promise} A promise fillfilled with accessToken, userId and expiresIn values,
-// * or rejected promise if login request was cancelled.
-// */
-//function authenticateVK(mainWin) {
-//    const URL = 'https://oauth.vk.com/authorize';
-//    const APP_ID = process.env.APP_ID || '5551949';
-//    const SCOPE = 'photos';
-//    const RESPONSE_TYPE = 'token';
-//    const DISPLAY = 'popup';
-//    const state = Math.floor(Math.random() * 10000);
-//
-//    const query = qs.stringify({
-//        state,
-//        client_id: APP_ID,
-//        response_type: RESPONSE_TYPE,
-//        scope: SCOPE,
-//        display: DISPLAY,
-//        revoke: 1,
-//        redirect_uri: 'https://oauth.vk.com/blank.html',
-//    });
-//
-//    const vkurl = `${URL}?${query}`;
-//
-//    const win = new BrowserWindow({ parent: mainWin, height: 430, width: 655 });
-//
-//    debug('open vk auth window %s', vkurl);
-//    win.loadURL(vkurl);
-//
-//    return new Promise((resolve, reject) => {
-//        win.webContents.on('did-get-redirect-request', function (event, oldUrl, newUrl) {
-//            const data = url.parse(newUrl);
-//            debug(data);
-//            // http://stackoverflow.com/questions/16733863/oauth2-0-implicit-grant-flow-why-use-url-hash-fragments
-//            if (data.host === 'oauth.vk.com' && data.pathname === '/blank.html' && data.hash) {
-//                const query = qs.parse(data.hash.substring(1));
-//                debug(query);
-//
-//                if(!('state' in query && query.state === String(state))) {
-//                    reject(new Error(`Incorrect state: expected ${query.state} to equal ${state}`));
-//                } else if ('error' in query) {
-//                    reject(new Error(query.error_description));
-//                } else if ('access_token' in query && 'user_id' in query && 'expires_in' in query) {
-//                    resolve({
-//                        accessToken: query.access_token,
-//                        userId: query.user_id,
-//                        expiresIn: query.expires_in,
-//                    });
-//                }
-//                win.destroy();
-//            }
-//        });
-//        win.on('closed', () => {
-//            reject(new Error('Auth window was closed before completing authentication'))
-//        });
-//    });
-//}
-
-async function onAsyncMessage(event, arg, arg2) {
-    // ctx = app (for koa!!!)
-    // this = app;
-
-    debug('async message', arg);
-    if (arg.getAlbum) {
-        const id = parseInt(arg.getAlbum, 10)
-        const albums = await this.vk.getAlbum(id)
-        const album = albums.filter(a => a.aid === id)
-        if (!album.length) {
-            return this.sendMessage('getAlbum', { error: 'Album not found' })
-        }
-        debug('album', album)
-        this.sendMessage('getAlbum', album[0])
-        return;
-    }
-    if (arg.getPhotos) {
-        const aid = parseInt(arg.getPhotos, 10)
-        const photos = await this.vk.getPhotos(aid)
-        debug('photos', photos)
-        this.sendMessage('getPhotos', photos)
-        return;
-    }
-    if (arg.getComments) {
-        const aid = parseInt(arg.getComments.aid, 10)
-        const comments = await this.vk.getComments(aid)
-        debug('comments', comments)
-        this.sendMessage('getComments', comments)
-        return;
-    }
-    if (arg.getUserPhoto) {
-        console.log('get user photo')
-        const id = arg.getUserPhoto.id
-        const size = arg.getUserPhoto.size
-        const userPhoto = await this.vk.getUserPhoto(id, size)
-        debug('photo', userPhoto)
-        this.sendMessage('getUserPhoto', userPhoto)
-        return
-    }
-
-    switch (arg) {
-        case 'authVK':
-            try {
-                const user = await this.vkAuthFlow()
-                debug('authVK: got user after auth', user);
-                this.sendMessage('loginVK', user);
-            } catch(err) {
-                this.sendMessage('loginVK', { error: err.message })
-                // this.sendError('error', err);
-            }
-            break;
-        case 'loginVK':
-            try {
-                const user = await this.loginVK();
-                debug('user after login', user);
-                this.sendMessage('loginVK', user);
-            } catch(err) {
-                this.sendMessage('loginVK', { error: err.message })
-                // this.sendError('error', err);
-            }
-            break;
-        case 'logout':
-            const res = await this.logout();
-            this.sendMessage('logout', res);
-            break;
-        case 'getAlbums':
-            const albums = await this.getAlbums()
-            debug('albums', albums)
-            this.sendMessage('getAlbums', albums)
-            break;
-
-    }
-}
+process.on('unhandledRejection', console.log);
 
 class App {
     constructor(session, cookieUrl, ipc) {
         this.session = session;
         this.cookieUrl = cookieUrl;
 
-        ipc.on('asynchronous-message', onAsyncMessage.bind(this));
+        ipc.on('asynchronous-message', api.bind(this));
 
         this.createWindow();
     }
@@ -176,17 +35,17 @@ class App {
         return res
     }
 
-    /**
-     * Send a message to the renderer process.
-     * @param {string} channel - the channel
-     * @param {object} message - the message
-     */
-    sendMessage(channel, message) {
-        debug('sending message', channel, message)
-        if (this.win && this.win.webContents) {
-            this.win.webContents.send(channel, message);
-        }
-    }
+    // /**
+    //  * Send a message to the renderer process.
+    //  * @param {string} channel - the channel
+    //  * @param {object} message - the message
+    //  */
+    // sendMessage(channel, message) {
+    //     debug('sending message', channel, message)
+    //     if (this.win && this.win.webContents) {
+    //         this.win.webContents.send(channel, message);
+    //     }
+    // }
     sendError(channel, error) {
         this.sendMessage(channel, error.message);
     }

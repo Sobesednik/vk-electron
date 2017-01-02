@@ -32,7 +32,7 @@
         created: async function () {
             this.loading = true;
             try {
-                const res = await ipc.send('authVK', 'loginVK');
+                const res = await ipc.send('authVK');
                 console.log(res);
                 this.user = res;
             } catch (err) {

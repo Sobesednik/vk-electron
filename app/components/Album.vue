@@ -33,7 +33,7 @@
             }
         },
         created: async function () {
-            const res = await ipc.send({ getAlbum: this.aid }, 'getAlbum')
+            const res = await ipc.send('getAlbum', { aid: this.aid })
             this.album = res;
             // const photos = await ipc.send({ getPhotos: this.album.aid }, 'getPhotos')
             // console.log(`got photos for album ${this.aid}`)

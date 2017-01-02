@@ -1,16 +1,15 @@
 <template>
     <div class="comments">
         <h2>Comments</h2>
-        {{ aid }}
-        <p v-for="comment in comments">
-            <avatar :id="comment.from_id"></avatar>
-            {{ comment.message }}
-        </p>
+        <template v-for="comment in comments">
+            <comment :comment="comment" :user="comment.user"></comment>
+        </template>
     </div>
 </template>
 
 <script>
     const ipc = require('../ipc')
+    const comment = require('./Comment.vue')
 
     module.exports = {
         data: function () {
@@ -20,12 +19,10 @@
             }
         },
         created: async function () {
-            const res = await ipc.send({ getComments: { aid: this.aid } }, 'getComments')
+            const res = await ipc.send('getComments', { aid: this.aid } )
             this.comments = res;
             console.log('got comments', res)
-        }
+        },
+        components: { comment }
     }
 </script>
-
-<style>
-</style>

@@ -19,7 +19,7 @@
         created: async function () {
             try {
                 const res = await ipc.send('getAlbums');
-                console.log('got albums', res);
+                console.log('Albums', res);
                 this.albums = res;
             } catch (err) {
                 console.log(err);

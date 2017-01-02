@@ -114,11 +114,11 @@ class VK {
             need_likes: 1,
         })
     }
-    getUserPhoto(id, photoSize) {
+    getUserPhoto(ids, photoSize) {
         const size = photoSize in ['50', '100', '200_orig', '400_orig', 'max', 'max_orig'] ? size : '50'
         const sizeString = `photo_${size}`
         return vkApiRequest('users.get', {
-            user_ids: [ id ],
+            user_ids: Array.isArray(ids) ? ids : [ ids ],
             fields: [ sizeString ]
         })
     }
