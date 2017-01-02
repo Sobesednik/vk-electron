@@ -1,7 +1,8 @@
 <template>
-    <div class="comments">
+    <div>
         <h2>Comments</h2>
-        <template v-for="comment in comments">
+        <spinner v-if="!comments"></spinner>
+        <template v-else v-for="comment in comments">
             <comment :comment="comment" :user="comment.user"></comment>
         </template>
     </div>
@@ -12,16 +13,12 @@
     const comment = require('./Comment.vue')
 
     module.exports = {
-        data: function () {
-            return {
-                aid: this.$route.params.aid,
-                comments: [],
-            }
-        },
+        data: () => ({
+            comments: undefined,
+        }),
+        props: [ 'aid' ],
         created: async function () {
-            const res = await ipc.send('getComments', { aid: this.aid } )
-            this.comments = res;
-            console.log('got comments', res)
+            this.comments = await ipc.send('getComments', { aid: this.aid } )
         },
         components: { comment }
     }

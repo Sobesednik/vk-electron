@@ -1,6 +1,7 @@
 <template>
-    <div class="photo-list-component">
-        <template v-for="item in partitioned">
+    <div>
+        <spinner v-if="!partitioned"></spinner>
+        <template v-else v-for="item in partitioned">
             <router-link :to="getItemLink(item)">
                 <div class="div-partition" :style="getPartitionCss(item.partition)">
                     <component :is="descriptionComponent" :item="item"></component>
@@ -21,7 +22,7 @@
     module.exports = {
         data: () => ({
             width: undefined,
-            partitioned: [],
+            partitioned: undefined,
         }),
         props: [
             'items',
@@ -32,14 +33,16 @@
         computed: {
             partitioned: function () {
                 console.log('computing partitioned')
-                const vkSize = 'x'
-                if (!this.width || !this.items.length) {
-                    console.log('return')
+                if (!this.width || !this.items) {
+                    return
+                }
+                // don't partition empty
+                if (Array.isArray(this.items) && !this.items.length) {
                     return []
                 }
+                const vkSize = 'x'
                 const previews = this.items
                     .map(item => getSize(item.sizes, vkSize))
-                    // .filter(size => size.width !== 0 && size.height !== 0)
 
                 // fall-over for when pictures don't have previews
                 previews.forEach((preview) => {
@@ -48,14 +51,12 @@
                         preview.height = 250;
                     }
                 })
-                console.log(JSON.stringify(previews))
-                console.log(this.width)
                 const viewports = { [this.width]: this.width }
                 console.log(viewports)
                 const partitioned = partitions.partitions({
                     [this.width]: this.width
                 }, previews, this.desiredHeight || defaultDesiredHeight)[this.width]
-                console.log('partitions', partitioned)
+
                 const merged = this.items
                     .map((item, index) => {
                         const partition = partitioned[index]
@@ -63,7 +64,6 @@
                         const newItem = clone(item)
                         return Object.assign({}, newItem, { partition }) // deep clone array
                     })
-                console.log('merged', merged)
                 return merged
             },
         },

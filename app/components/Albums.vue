@@ -1,7 +1,8 @@
 <template>
     <div>
         <h1>Albums</h1>
-        <photo-list :items="albums" :get-item-link="getAlbumLink" :description-component="albumOverlay"></photo-list>
+        <spinner v-if="!albums"></spinner>
+        <photo-list v-else :items="albums" :get-item-link="getAlbumLink" :description-component="albumOverlay"></photo-list>
     </div>
 </template>
 
@@ -10,12 +11,11 @@
     const AlbumOverlay = require('./AlbumOverlay.vue')
     const Vue = require('vue')
 
-    const data = {
-        albums: [],
-        albumOverlay: AlbumOverlay
-    }
     module.exports = {
-        data: () => data,
+        data: () => ({
+            albums: undefined,
+            albumOverlay: AlbumOverlay,
+        }),
         created: async function () {
             try {
                 const res = await ipc.send('getAlbums');

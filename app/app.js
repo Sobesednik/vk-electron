@@ -11,18 +11,17 @@ const VueBreadcrumbs = require('vue2-breadcrumbs')
 const Albums = require('./components/Albums.vue')
 const Album = require('./components/Album.vue')
 const Comments = require('./components/Comments.vue')
-const Avatar = require('./components/Avatar.vue')
 const SimpleAvatar = require('./components/SimpleAvatar.vue')
 const AlbumPhotoList = require('./components/AlbumPhotoList.vue')
+const Spinner = require('./components/Spinner.vue')
 
 Vue.use(VueRouter)
 Vue.use(VueBreadcrumbs)
 
-Vue.component('Auth', Auth)
+Vue.component('auth', Auth)
 Vue.component('photo-list', PhotoList)
-// Vue.component('avatar', Avatar)
 Vue.component('simple-avatar', SimpleAvatar)
-
+Vue.component('spinner', Spinner)
 
 const router = new VueRouter({
     routes: [
