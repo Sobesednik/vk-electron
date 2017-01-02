@@ -76,6 +76,13 @@ async function onAsyncMessage(event, message) {
             return reply(userPhoto)
         }
 
+        if (message.method === 'getPhotos') {
+            const aid = parseInt(data.aid, 10)
+            const photos = await this.vk.getPhotos(aid)
+            debug('photos', photos)
+            return reply(photos)
+        }
+
         throw new Error('Method not found');
     } catch (err) {
         console.error(err)
