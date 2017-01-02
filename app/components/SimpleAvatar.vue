@@ -1,18 +1,17 @@
 <template>
-    <div class="vk-avatar" :class="classObject">
-        <img :src="photo" :alt="name">
-    </div>
+    <img :src="photo" :alt="name" :style="styleObject">
 </template>
+
 <script>
     module.exports = {
         data: () => ({
             radius: 50
         }),
         computed: {
-            classObject: function () {
+            styleObject: function () {
                 return {
-                    width: this.radius + 'px',
-                    height: this.radius + 'px',
+                    width: `${this.radius}px`,
+                    height: `${this.radius}px`,
                     'border-radius': '50%',
                 }
             },
