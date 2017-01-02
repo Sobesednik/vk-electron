@@ -14,9 +14,9 @@
             {{ album.privacy_view }}
             {{ album.privacy_comment }}
         </div>
+        <router-link to="./">Photos</router-link>
         <router-link to="comments">Comments</router-link>
-        <router-view></router-view>
-        <!--<photo-list :items="photos" :get-item-link="getPhotoLink" desired-height="200"></photo-list>-->
+        <router-view :aid="aid"></router-view>
     </div>
 </template>
 
@@ -29,23 +29,16 @@
             return {
                 aid: this.$route.params.aid,
                 album: undefined,
-                photos: [],
             }
         },
         created: async function () {
             const res = await ipc.send('getAlbum', { aid: this.aid })
             this.album = res;
-            // const photos = await ipc.send({ getPhotos: this.album.aid }, 'getPhotos')
-            // console.log(`got photos for album ${this.aid}`)
-            // this.photos = photos
         },
         methods: {
             getSize: function(item, size) {
                 return getSize(item.sizes, size)
             },
-            getPhotoLink: function(item) {
-                return String(item.pid);
-            }
         },
     }
 </script>

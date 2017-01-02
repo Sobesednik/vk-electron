@@ -13,6 +13,7 @@ const Album = require('./components/Album.vue')
 const Comments = require('./components/Comments.vue')
 const Avatar = require('./components/Avatar.vue')
 const SimpleAvatar = require('./components/SimpleAvatar.vue')
+const AlbumPhotoList = require('./components/AlbumPhotoList.vue')
 
 Vue.use(VueRouter)
 Vue.use(VueBreadcrumbs)
@@ -36,10 +37,8 @@ const router = new VueRouter({
             component: Album,
             children: [
                 {
-                    path: '',
-                },
-                {
-                    path: 'photos',
+                    path: '/',
+                    component: AlbumPhotoList,
                 },
                 {
                     path: 'comments',
