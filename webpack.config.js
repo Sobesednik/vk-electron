@@ -52,13 +52,13 @@ module.exports = {
     target: 'electron-renderer',
 }
 
-module.exports.plugins = [
-    new webpack.ProvidePlugin({
-        $: "jquery",
-        jQuery: "jquery",
-        jquery: "jquery",
-    }),
-]
+// module.exports.plugins = [
+//     new webpack.ProvidePlugin({
+//         $: "jquery",
+//         jQuery: "jquery",
+//         jquery: "jquery",
+//     }),
+// ]
 
 if (process.env.NODE_ENV === 'production') {
     module.exports.plugins = [

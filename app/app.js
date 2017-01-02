@@ -1,6 +1,4 @@
-require('animate.css')
 require('bootstrap/dist/css/bootstrap.css');
-const noty = require('noty');
 
 const Vue = require('vue')
 const App = require('./App.vue')
