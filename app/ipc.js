@@ -10,6 +10,7 @@ function createIpcPromise(mid) {
             console.log(`${mid} response`, message)
             ipcRenderer.removeListener(mid, handler)
             if (message && message.error) {
+                console.error(message.error)
                 return reject(message.error)
             }
             return resolve(message)
