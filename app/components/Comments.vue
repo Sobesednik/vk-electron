@@ -3,7 +3,7 @@
         <h2>Comments</h2>
         {{ aid }}
         <p v-for="comment in comments">
-            {{ comment.from_id }}
+            <avatar :id="comment.from_id"></avatar>
             {{ comment.message }}
         </p>
     </div>
