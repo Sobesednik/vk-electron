@@ -1,7 +1,6 @@
 <template>
     <div>
-        <spinner v-if="!partitioned"></spinner>
-        <template v-else v-for="item in partitioned">
+        <template v-if="partitioned" v-for="item in partitioned">
             <router-link :to="getItemLink(item)">
                 <div class="div-partition" :style="getPartitionCss(item.partition)">
                     <component :is="descriptionComponent" :item="item"></component>
@@ -21,15 +20,15 @@
     const defaultDesiredHeight = 250;
     module.exports = {
         data: () => ({
-            width: undefined,
-            partitioned: undefined,
+            width: null,
+            partitioned: null,
         }),
-        props: [
-            'items',
-            'get-item-link',
-            'description-component',
-            'desired-height',
-        ],
+        props: {
+            items: { type: Array },
+            getItemLink: { type: Function },
+            descriptionComponent: { },
+            desiredHeight: { type: Number, default: defaultDesiredHeight },
+        },
         computed: {
             partitioned: function () {
                 console.log('computing partitioned')
@@ -53,23 +52,20 @@
                 })
                 const viewports = { [this.width]: this.width }
                 console.log(viewports)
-                const partitioned = partitions.partitions({
-                    [this.width]: this.width
-                }, previews, this.desiredHeight || defaultDesiredHeight)[this.width]
+                const partitioned = partitions.partitions(viewports, previews, this.desiredHeight)[this.width]
 
                 const merged = this.items
                     .map((item, index) => {
                         const partition = partitioned[index]
                         partition.src = getSize(item.sizes, vkSize).src
-                        const newItem = clone(item)
-                        return Object.assign({}, newItem, { partition }) // deep clone array
+                        return Object.assign(clone(item), { partition }) // deep clone array
                     })
                 return merged
             },
         },
         beforeDestroy: function () {
             console.log('before destroy')
-            window.removeEventListener('resize', this.handleResize)
+            window.removeEventListener('resize', this.updateWidth)
         },
         mounted: function () {
             console.log('mounted')
@@ -84,13 +80,16 @@
                 this.width = calculateWidth(this.$el)
             },
             getPartitionCss: function (partition) {
-                return `width:${partition.width}px; height:${partition.height}px`;
+                return {
+                    width: `${partition.width}px`,
+                    height: `${partition.height}px`,
+                }
             },
         }
     }
 </script>
 
-<style>
+<style scoped>
     .div-partition {
         position: relative;
         display: inline-block;

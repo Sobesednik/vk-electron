@@ -25,7 +25,6 @@ async function vkApiRequest(method, options) {
     };
     debug('vk api request: %o', opts);
     const res = await req(opts);
-    console.log(res)
     const result = JSON.parse(res);
     debug('vk api result: %o', result);
     if ('error' in result) {
@@ -99,10 +98,12 @@ class VK {
             photo_sizes: 1,
         })
     }
-    getPhotos(aid) {
+    getPhotos(filter) {
         return vkApiRequest('photos.get', {
             access_token: this.accessToken,
-            album_id: aid,
+            album_id: filter.aid,
+            offset: filter.offset,
+            count: filter.count,
             photo_sizes: 1,
             rev: 1,
         })
@@ -120,6 +121,11 @@ class VK {
         return vkApiRequest('users.get', {
             user_ids: Array.isArray(ids) ? ids : [ ids ],
             fields: [ sizeString ]
+        })
+    }
+    getAlbumsCount() {
+        return vkApiRequest('photos.getAlbumsCount', {
+            access_token: this.accessToken,
         })
     }
 }

@@ -14,6 +14,7 @@ const Comments = require('./components/Comments.vue')
 const SimpleAvatar = require('./components/SimpleAvatar.vue')
 const AlbumPhotoList = require('./components/AlbumPhotoList.vue')
 const Spinner = require('./components/Spinner.vue')
+const Pagination = require('vue-bootstrap-paginator')
 
 Vue.use(VueRouter)
 Vue.use(VueBreadcrumbs)
@@ -22,28 +23,29 @@ Vue.component('auth', Auth)
 Vue.component('photo-list', PhotoList)
 Vue.component('simple-avatar', SimpleAvatar)
 Vue.component('spinner', Spinner)
+Vue.component('pagination', Pagination)
 
 const router = new VueRouter({
     routes: [
-        { path: '/', component: App, meta: { breadcrumb: 'Home Page' } },
+        { path: '/', component: App },
+        { path: '/album/:aid', redirect: '/album/:aid/photos/' },
         {
-            path: '/albums',
+            path: '/albums/:page?',
             component: Albums,
-            meta: { breadcrumb: 'Albums' },
-         },
+        },
         {
-            path: '/albums/:aid',
+            path: '/album/:aid',
             component: Album,
             children: [
                 {
-                    path: '/',
+                    path: 'photos/:page?',
                     component: AlbumPhotoList,
                 },
                 {
                     path: 'comments',
                     component: Comments
-                }
-            ]
+                },
+            ],
         },
     ],
 })
