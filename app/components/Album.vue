@@ -1,22 +1,25 @@
 <template>
     <div>
-        Album {{ $route.params.aid }}
-        <div v-if="album">
-            {{ album.aid }}
-            {{ album.thumb_id }}
-            {{ album.owner_id }}
-            {{ album.title }}
-            {{ album.description }}
-            {{ album.created }}
-            {{ album.updated }}
-            {{ album.size }}
-            {{ album.privacy }}
-            {{ album.privacy_view }}
-            {{ album.privacy_comment }}
+        <h1> Album {{ $route.params.aid }} </h1>
+        <router-link :to="`/album/${aid}`">Photos</router-link>
+        <router-link :to="`/album/${aid}/comments`">Comments</router-link>
+        <spinner v-if="!album"></spinner>
+        <div v-else>
+            <p class="album-info">
+                {{ album.aid }}
+                {{ album.thumb_id }}
+                {{ album.owner_id }}
+                {{ album.title }}
+                {{ album.description }}
+                {{ album.created }}
+                {{ album.updated }}
+                {{ album.size }}
+                {{ album.privacy }}
+                {{ album.privacy_view }}
+                {{ album.privacy_comment }}
+            </p>
+            <router-view :aid="aid" :page="page" :total="album.size"></router-view>
         </div>
-        <router-link to="./">Photos</router-link>
-        <router-link to="comments">Comments</router-link>
-        <router-view :aid="aid"></router-view>
     </div>
 </template>
 
@@ -34,6 +37,11 @@
         created: async function () {
             const res = await ipc.send('getAlbum', { aid: this.aid })
             this.album = res;
+        },
+        computed: {
+            page: function () {
+                return Number(this.$route.params.page) || 1
+            }
         },
         methods: {
             getSize: function(item, size) {

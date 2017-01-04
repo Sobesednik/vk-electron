@@ -2,33 +2,40 @@
     <div>
         <h1>Albums</h1>
         <spinner v-if="!albums"></spinner>
-        <photo-list v-else :items="albums" :get-item-link="getAlbumLink" :description-component="albumOverlay"></photo-list>
+        <div v-else>
+            <!--<per-page :total="50" :current="10" label="Per page:"></per-page>-->
+            <photo-list :items="albums" :get-item-link="getAlbumLink" :description-component="albumOverlay"></photo-list>
+        </div>
     </div>
 </template>
 
 <script>
     const ipc = require('../ipc')
     const AlbumOverlay = require('./AlbumOverlay.vue')
-    const Vue = require('vue')
+    const PerPage = require('./PerPage.vue')
 
     module.exports = {
-        data: () => ({
-            albums: undefined,
-            albumOverlay: AlbumOverlay,
-        }),
-        created: async function () {
-            try {
-                const res = await ipc.send('getAlbums');
-                console.log('Albums', res);
-                this.albums = res;
-            } catch (err) {
-                console.log(err);
+        data: function () {
+            return {
+                page: String(this.$route.params.page) || 1,
+                albums: undefined,
+                albumOverlay: AlbumOverlay,
+                albumsCount: undefined,
             }
+        },
+        created: async function () {
+            this.albumsCount = await ipc.send('getAlbumsCount')
+            const res = await ipc.send('getAlbums');
+            console.log('Albums', res);
+            this.albums = res;
         },
         methods: {
             getAlbumLink: function (item) {
-                return `/albums/${item.aid}/`;
+                return `/album/${item.aid}/photos/`;
             },
+        },
+        components: {
+            PerPage,
         }
     }
 </script>
