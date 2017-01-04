@@ -69,10 +69,10 @@
         },
         created: function () {
             this.fetchData()
-            // window.addEventListener('keyup', this.handleKeyUp)
+            window.addEventListener('keyup', this.handleKeyUp)
         },
         beforeDestroy: function () {
-            // window.removeEventListener('keyup', this.handleKeyUp)
+            window.removeEventListener('keyup', this.handleKeyUp)
         },
         components: {
             PhotoList,
